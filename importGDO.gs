@@ -1,8 +1,8 @@
 function importGdo() {
   sheet = SpreadsheetApp.getActive().getSheetByName('input');
   var loginUrl = 'https://usr.golfdigest.co.jp/pg/frlogin.php';
-  var id = 'ididididid';
-  var password = 'passpass';
+  var id = sheet.getRange(sheet.getLastRow() - 3,3,1,1).getValue();
+  var password = sheet.getRange(sheet.getLastRow() - 2,3,1,1).getValue();
   var loginOptions = {
     method : 'post',
     followRedirects: false,
@@ -108,7 +108,7 @@ function importGdo() {
     var row = (roundNum - i) + 3;
     
     //列コピー
-    sheet.getRange(sheet.getLastRow(),27,1,sheet.getLastColumn() - 27).copyTo(sheet.getRange(row,27,1,sheet.getLastColumn() - 27));
+    sheet.getRange(sheet.getLastRow(),27,1,sheet.getLastColumn() - 26).copyTo(sheet.getRange(row,27,1,sheet.getLastColumn() - 26));
     
     //項番入力
     setData(row,2,roundNum - i);
