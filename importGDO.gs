@@ -1,3 +1,5 @@
+var sheet;
+
 function importGdo() {
   sheet = SpreadsheetApp.getActive().getSheetByName('input');
   var loginUrl = 'https://usr.golfdigest.co.jp/pg/frlogin.php';
@@ -21,7 +23,6 @@ function importGdo() {
   // レスポンスヘッダーからcookie(mmsns)を取得
   var loginHeaders = loginResponse.getAllHeaders();
   var cookies;
-  var cookie;
   
   if ( typeof loginHeaders['Set-Cookie'] !== 'undefined' ) {
     // Set-Cookieヘッダーが2つ以上の場合はheaders['Set-Cookie']の中身は配列
@@ -32,12 +33,7 @@ function importGdo() {
       cookies[i] = cookies[i].split( ';' )[0];
     };
   }
-  cookies.some(function(value){
-    if(value.match(/mmsns/)){
-      cookie = value;
-      return true;
-    }
-  })
+  
   
   //スコア一覧画面のhtml取得
   var listUrl = 'https://score.golfdigest.co.jp/score/list';
@@ -47,7 +43,7 @@ function importGdo() {
     contentType: 'application/x-www-form-urlencoded',
     muteHttpExceptions: true,
     headers: {
-      Cookie: cookie
+      Cookie: cookies.join(';')
     }
   };
   var roundList = [];
@@ -82,7 +78,7 @@ function importGdo() {
   }
   
   for(var i = updateNum - 1; i >= 0; i--){
-//  for(var i = 22; i >= 22; i--){
+//  for(var i = 26; i >= 0; i--){
     //スコア詳細ページ取得
     var pageNum = Math.floor(i/20);
     var roundTd = roundList[pageNum][i - (20 * pageNum)];
@@ -129,22 +125,27 @@ function importGdo() {
     
     
     //ヤーデージ取得
-    var yard = getChildTags(scoreTables[0],[
-      ['tr','<tr class="is-yard">','',0],['td','<td>','']
-    ])[10].replace(/,|y/g,'');
+    var yards = []; //コースマッチで使うので、それぞれの値も残す
+    var yard = 0;
+    for(var j = 0; j < 2; j++){
+      yards.push(getChildTags(scoreTables[j],[
+        ['tr','<tr class="is-yard">','',0],['td','<td>','']
+      ])[9].replace(/,|y/g,''));
+      
+      yard += Number(yards[j]);
+    }
     
     //ヤーデージ入力
     setData(row,7,yard);
     
     
     //アベレージ取得
-    var Ave;
+    var Ave = '100';
     if(!noCourseFlag){
       Ave = getChildTags(scoreSummaryTable,[
         ['tr','<tr class="is-total-score">','',0],['td','<td>','']
       ])[1].replace(/\n|\r|\s/g,'');
     }else{
-      Ave = '100';
       sheet.getRange(row,8,1,1).setBackground('#ffff00');
     }
     
@@ -251,6 +252,7 @@ function importGdo() {
         courseName += ']';
       }
     }
+    
     
     //ゴルフ場名入力
     setData(row,4,courseName);
@@ -367,6 +369,48 @@ function importGdo() {
     if(noCourseRateFlag){
       sheet.getRange(row,6,1,1).setBackground('#ffff00');
     }
+    
+    
+    //HDCP取得
+    var HDCPs = [[],[]];
+    if(!noCourseFlag){
+      var courseSummaryTables = getTags(layoutHtml, 'table', '<table.*?class="tbl layout.*?>','');
+      
+      courseSummaryTables.forEach(function(value,index){
+        var coursePars = [];
+        var courseHDCPs = []; 
+        var courseYards = []; 
+        
+        var courseSummaryTrs = getChildTags(value,[
+          ['tbody', '<tbody>','',0],['tr', '<tr>','']
+        ]);
+        
+        for(var j = 0; j < 9; j++){
+          coursePars.push(getTags(courseSummaryTrs[0], 'td', '<td>', '')[j].match(/[0-9]/)[0]);
+          courseHDCPs.push(getTags(courseSummaryTrs[courseSummaryTrs.length - 1], 'td', '<td>', '')[j]);
+        }
+        
+        for(var j = 1; j < courseSummaryTrs.length - 1; j++){
+          courseYards.push(getTags(courseSummaryTrs[j], 'td', '<td>', '')[9]);
+        }
+        
+        for(var j = 0; j < 2; j++){
+          var yardReg = new RegExp(yards[j]);
+          if(String(coursePars) == String(pars[j]) && String(courseYards).match(yardReg)){
+            HDCPs[j] = courseHDCPs;
+          }
+        }
+      });
+      
+      //HDCP入力
+      for(var j = 0; j < 2; j++){
+        for(var k = 0; k < 9; k++){
+          setData(row, 99 + k + (9 * j), HDCPs[j][k]);
+        }
+      }
+    }
+    
+    
   }
 }
 
@@ -416,7 +460,7 @@ function getTags(xml,tagType,tagReg,elementReg){
   return xmls;
 }
 
-function getChildTags(xml,array){ //array = [[tagType,tagReg,elementReg,num],[tagType,tagReg,elementReg]]
+function getChildTags(xml,array){ //array = [[tagType,tagReg,elementReg,num],[tagType,tagReg,elementReg],・・・・・]
   array.forEach(function(value,index){
     xml = getTags(xml,value[0],value[1],value[2]);
     if(index !== array.length - 1){
