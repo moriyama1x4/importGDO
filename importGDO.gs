@@ -1,10 +1,9 @@
-var sheet;
+var sheet = SpreadsheetApp.getActive().getSheetByName('input');
 
 function importGdo() {
-  sheet = SpreadsheetApp.getActive().getSheetByName('input');
   var loginUrl = 'https://usr.golfdigest.co.jp/pg/frlogin.php';
-  var id = sheet.getRange(sheet.getLastRow() - 3,3,1,1).getValue();
-  var password = sheet.getRange(sheet.getLastRow() - 2,3,1,1).getValue();
+  var id = PropertiesService.getScriptProperties().getProperty('ID');
+  var password = PropertiesService.getScriptProperties().getProperty('PASSWORD');
   var loginOptions = {
     method : 'post',
     followRedirects: false,
@@ -415,7 +414,10 @@ function importGdo() {
 }
 
 
-
+function getData(y,x){
+  var range = sheet.getRange(y, x);
+  return range.getValue();
+}
 
 
 function setData(y,x,data){
