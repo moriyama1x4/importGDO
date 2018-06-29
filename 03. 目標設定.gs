@@ -1,5 +1,4 @@
 function setGoal() {
-  var sheetAll = SpreadsheetApp.getActive().getSheetByName('全体');
   
   //未完了のラウンドを取得
   var planRow = [];
@@ -13,15 +12,15 @@ function setGoal() {
   
 
   planRow.forEach(function(value){
-    var pars = sheet.getRange(value,9,1,18).getValues()[0];
+    var pars = sheetInput.getRange(value,9,1,18).getValues()[0];
     var totalPar = 0;
     pars.forEach(function(value){
       totalPar += value;
     });
-    var goalScore = sheetAll.getRange(value,12).getValue();
+    var goalScore = sheetTotal.getRange(value,12).getValue();
     var baseHDCP = Math.floor((goalScore - totalPar)/18); //全ホールにつくハンディ
     var addHDCP = (goalScore - totalPar) - (18 * baseHDCP); //追加でハンディがつくホール数
-    var courseHDCPs = sheet.getRange(value,99,1,18).getValues()[0];
+    var courseHDCPs = sheetInput.getRange(value,99,1,18).getValues()[0];
     var courseHDCP = 0;
     courseHDCPs.forEach(function(value){
       courseHDCP += value;
@@ -45,7 +44,7 @@ function setGoal() {
            }
          }
       }
-    }else{//コースハンディなしの時
+    }else{//その他(コースハンディなしの時 など)
       var priority = [];
       pars.forEach(function(value,index){
         if(value == 5){
@@ -69,7 +68,7 @@ function setGoal() {
     }
     
     //目標スコア入力
-    sheet.getRange(value,27,1,18).setValues([score]);
+    sheetInput.getRange(value,27,1,18).setValues([score]);
   });
 }
 

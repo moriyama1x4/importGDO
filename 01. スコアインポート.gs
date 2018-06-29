@@ -1,4 +1,6 @@
-var sheet = SpreadsheetApp.getActive().getSheetByName('input');
+var sheetTotal = SpreadsheetApp.getActive().getSheetByName('全体');
+var sheetHole = SpreadsheetApp.getActive().getSheetByName('ホール別');
+var sheetInput = SpreadsheetApp.getActive().getSheetByName('input');
 
 function importGdo() {
   var loginUrl = 'https://usr.golfdigest.co.jp/pg/frlogin.php';
@@ -61,6 +63,21 @@ function importGdo() {
     }
   }
   
+  //行数を数える
+  var rowsNum;
+  for(var i = 1; true; i++){
+    if(getData(i, 2) == '#'){
+      rowsNum = sheetInput.getLastRow() - i;
+      break;
+    }
+  }
+  
+  //少なかったら行増やす
+  if(roundNum > rowsNum){
+    addRows(roundNum - rowsNum);
+  }
+  
+  
   //更新数取得
   var updateNum;
   while(true){
@@ -101,10 +118,7 @@ function importGdo() {
     
     //入力列定義
     var row = (roundNum - i) + 3;
-    
-    //列コピー
-    sheet.getRange(sheet.getLastRow(),27,1,sheet.getLastColumn() - 26).copyTo(sheet.getRange(row,27,1,sheet.getLastColumn() - 26));
-    
+        
     //項番入力
     setData(row,2,roundNum - i);
     
@@ -145,7 +159,7 @@ function importGdo() {
         ['tr','<tr class="is-total-score">','',0],['td','<td>','']
       ])[1].replace(/\n|\r|\s/g,'');
     }else{
-      sheet.getRange(row,8,1,1).setBackground('#ffff00');
+      sheetInput.getRange(row,8,1,1).setBackground('#ffff00');
     }
     
     //アベレージ入力
@@ -366,7 +380,7 @@ function importGdo() {
     //コースレート入力
     setData(row,6,courseRate);
     if(noCourseRateFlag){
-      sheet.getRange(row,6,1,1).setBackground('#ffff00');
+      sheetInput.getRange(row,6,1,1).setBackground('#ffff00');
     }
     
     
@@ -415,13 +429,13 @@ function importGdo() {
 
 
 function getData(y,x){
-  var range = sheet.getRange(y, x);
+  var range = sheetInput.getRange(y, x);
   return range.getValue();
 }
 
 
 function setData(y,x,data){
-  var range = sheet.getRange(y, x);
+  var range = sheetInput.getRange(y, x);
   range.setValue(data);
 }
 
