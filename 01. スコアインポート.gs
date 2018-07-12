@@ -63,18 +63,9 @@ function importGdo() {
     }
   }
   
-  //行数を数える
-  var rowsNum;
-  for(var i = 1; true; i++){
-    if(getData(i, 2) == '#'){
-      rowsNum = sheetInput.getLastRow() - i;
-      break;
-    }
-  }
-  
-  //少なかったら行増やす
-  if(roundNum > rowsNum){
-    addRows(roundNum - rowsNum);
+  //行数が少なかったら増やす
+  if(roundNum > sheetInput.getLastRow() - 3){
+    addRows(roundNum - (sheetInput.getLastRow() - 3));
   }
   
   

@@ -8,6 +8,10 @@ function onOpen() {
     {
       name : "目標設定",
       functionName : "setGoal"
+    },
+    {
+      name : "ラウンド削除",
+      functionName : "clearRound"
     }
   ];
   sheet.addMenu("スクリプト実行", entries);

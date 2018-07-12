@@ -21,6 +21,5 @@ function　clearRows(row, rowsNum){
 		
 		//諸々クリア
 		sheetInput.getRange(row, 2, rowsNum, 43).setValue('');
-		sheetInput.getRange(row, 63, rowsNum, 18).setValue('');
 		sheetInput.getRange(row, 99, rowsNum, 18).setValue('');
 }
