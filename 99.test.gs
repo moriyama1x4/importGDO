@@ -1,5 +1,5 @@
 function test() {
-  var a = "28"
+  var a = "27７"
   
   Logger.log(30 < a);
 }
